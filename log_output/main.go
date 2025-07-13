@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
+	"net/http"
+	"os"
 	"time"
 )
 
@@ -15,12 +18,23 @@ func generateRandomString(n int, r *rand.Rand) string {
 	return string(b)
 }
 
+func randomStringHandler(w http.ResponseWriter, r *http.Request) {
+	s := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randomString := generateRandomString(16, s)
+	timestamp := time.Now().Format(time.RFC3339)
+	fmt.Fprintf(w, "[%s] %s\n", timestamp, randomString)
+}
+
 func main() {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	randomString := generateRandomString(16, r)
-	for {
-		timestamp := time.Now().Format(time.RFC3339)
-		fmt.Printf("[%s] %s\n", timestamp, randomString)
-		time.Sleep(5 * time.Second)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	http.HandleFunc("/random", randomStringHandler)
+
+	log.Printf("Starting server on port %s...", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
 	}
 }
