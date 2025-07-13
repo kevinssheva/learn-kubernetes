@@ -14,3 +14,10 @@ spec:
                 name: log-output-service
                 port:
                   number: 8080
+          - path: /pingpong
+            pathType: Prefix
+            backend:
+              service:
+                name: pingpong-app-service
+                port:
+                  number: 8080
